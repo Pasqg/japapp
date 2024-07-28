@@ -18,10 +18,118 @@ class MainPageState extends State<MainPage>
 
   late TabController _tabController;
 
-  String _currentHiragana = '';
+  String _selectedScript = "Hiragana";
+  String _currentKana = '';
   bool _isNextHiraganaDisabled = true;
 
-  final Map<String, String> _hiraganaMap = {
+  static const Map<String, String> KATAKANA_MAP = {
+    'ア': 'a',
+    'イ': 'i',
+    'ウ': 'u',
+    'エ': 'e',
+    'オ': 'o',
+    'カ': 'ka',
+    'キ': 'ki',
+    'ク': 'ku',
+    'ケ': 'ke',
+    'コ': 'ko',
+    'サ': 'sa',
+    'シ': 'shi',
+    'ス': 'su',
+    'セ': 'se',
+    'ソ': 'so',
+    'タ': 'ta',
+    'チ': 'chi',
+    'ツ': 'tsu',
+    'テ': 'te',
+    'ト': 'to',
+    'ナ': 'na',
+    'ニ': 'ni',
+    'ヌ': 'nu',
+    'ネ': 'ne',
+    'ノ': 'no',
+    'ハ': 'ha',
+    'ヒ': 'hi',
+    'フ': 'fu',
+    'ヘ': 'he',
+    'ホ': 'ho',
+    'マ': 'ma',
+    'ミ': 'mi',
+    'ム': 'mu',
+    'メ': 'me',
+    'モ': 'mo',
+    'ヤ': 'ya',
+    'ユ': 'yu',
+    'ヨ': 'yo',
+    'ラ': 'ra',
+    'リ': 'ri',
+    'ル': 'ru',
+    'レ': 're',
+    'ロ': 'ro',
+    'ワ': 'wa',
+    'ヲ': 'wo',
+    'ン': 'n',
+    'ガ': 'ga',
+    'ギ': 'gi',
+    'グ': 'gu',
+    'ゲ': 'ge',
+    'ゴ': 'go',
+    'ザ': 'za',
+    'ジ': 'ji',
+    'ズ': 'zu',
+    'ゼ': 'ze',
+    'ゾ': 'zo',
+    'ダ': 'da',
+    'ヂ': 'ji',
+    'ヅ': 'zu',
+    'デ': 'de',
+    'ド': 'do',
+    'バ': 'ba',
+    'ビ': 'bi',
+    'ブ': 'bu',
+    'ベ': 'be',
+    'ボ': 'bo',
+    'パ': 'pa',
+    'ピ': 'pi',
+    'プ': 'pu',
+    'ペ': 'pe',
+    'ポ': 'po',
+    'キャ': 'kya',
+    'キュ': 'kyu',
+    'キョ': 'kyo',
+    'シャ': 'sha',
+    'シュ': 'shu',
+    'ショ': 'sho',
+    'チャ': 'cha',
+    'チュ': 'chu',
+    'チョ': 'cho',
+    'ニャ': 'nya',
+    'ニュ': 'nyu',
+    'ニョ': 'nyo',
+    'ヒャ': 'hya',
+    'ヒュ': 'hyu',
+    'ヒョ': 'hyo',
+    'ミャ': 'mya',
+    'ミュ': 'myu',
+    'ミョ': 'myo',
+    'リャ': 'rya',
+    'リュ': 'ryu',
+    'リョ': 'ryo',
+    'ギャ': 'gya',
+    'ギュ': 'gyu',
+    'ギョ': 'gyo',
+    'ジャ': 'ja',
+    'ジュ': 'ju',
+    'ジョ': 'jo',
+    'ビャ': 'bya',
+    'ビュ': 'byu',
+    'ビョ': 'byo',
+    'ピャ': 'pya',
+    'ピュ': 'pyu',
+    'ピョ': 'pyo'
+  };
+
+  static const Map<String, String> HIRAGANA_MAP = {
     'あ': 'a',
     'い': 'i',
     'う': 'u',
@@ -75,7 +183,7 @@ class MainPageState extends State<MainPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _textEditingController.addListener(_enableDisableNextButton);
-    _generateRandomHiragana();
+    _nextKana();
   }
 
   @override
@@ -85,11 +193,17 @@ class MainPageState extends State<MainPage>
     super.dispose();
   }
 
-  void _generateRandomHiragana() {
+  void _nextKana() {
     final random = Random();
+
     setState(() {
-      _currentHiragana =
-          _hiraganaMap.keys.elementAt(random.nextInt(_hiraganaMap.length));
+      if (_selectedScript == 'Hiragana') {
+        _currentKana =
+            HIRAGANA_MAP.keys.elementAt(random.nextInt(HIRAGANA_MAP.length));
+      } else {
+        _currentKana =
+            KATAKANA_MAP.keys.elementAt(random.nextInt(KATAKANA_MAP.length));
+      }
     });
   }
 
@@ -102,14 +216,20 @@ class MainPageState extends State<MainPage>
   void _validateTransliteration() {
     String transliteration = _textEditingController.text.trim();
     _textEditingController.clear();
-    String? expected = _hiraganaMap[_currentHiragana];
+    String? expected;
+    if (_selectedScript == 'Hiragana') {
+      expected = HIRAGANA_MAP[_currentKana];
+    } else {
+      expected = KATAKANA_MAP[_currentKana];
+    }
+
     if (expected == transliteration) {
       _showCustomSnackBar('Correct!', Colors.green);
     } else {
       _showCustomSnackBar('Incorrect! It was "$expected"', Colors.red);
     }
     _enableDisableNextButton();
-    _generateRandomHiragana();
+    _nextKana();
     FocusScope.of(context).requestFocus(_focusNode);
   }
 
@@ -166,40 +286,63 @@ class MainPageState extends State<MainPage>
   }
 
   Widget _buildHiraganaView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _currentHiragana,
-              style:
-                  const TextStyle(fontSize: 100, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _textEditingController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Transliteration',
-              ),
-              focusNode: _focusNode,
-              onSubmitted: (value) {
-                if (!_isNextHiraganaDisabled) {
-                  _validateTransliteration();
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed:
-                  _isNextHiraganaDisabled ? null : _validateTransliteration,
-              child: const Text('Next'),
-            ),
-          ],
+    return Stack(
+      children: [
+        Positioned(
+          top: 16,
+          left: 16,
+          child: DropdownButton<String>(
+            value: _selectedScript,
+            items: <String>['Hiragana', 'Katakana'].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedScript = newValue!;
+                _nextKana();
+              });
+            },
+          ),
         ),
-      ),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _currentKana,
+                  style: const TextStyle(
+                      fontSize: 100, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _textEditingController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Transliteration',
+                  ),
+                  focusNode: _focusNode,
+                  onSubmitted: (value) {
+                    if (!_isNextHiraganaDisabled) {
+                      _validateTransliteration();
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed:
+                      _isNextHiraganaDisabled ? null : _validateTransliteration,
+                  child: const Text('Next'),
+                ),
+              ],
+            ),
+          ),
+        )
+      ],
     );
   }
 }
