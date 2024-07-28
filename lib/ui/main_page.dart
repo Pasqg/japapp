@@ -12,11 +12,14 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
   final TextEditingController _textEditingController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final FocusNode _focusNode = FocusNode();
+
+  late TabController _tabController;
+
   String _currentHiragana = '';
   bool _isNextHiraganaDisabled = true;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final Map<String, String> _hiraganaMap = {
     'あ': 'a',
@@ -75,6 +78,13 @@ class MainPageState extends State<MainPage>
     _generateRandomHiragana();
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
   void _generateRandomHiragana() {
     final random = Random();
     setState(() {
@@ -92,13 +102,15 @@ class MainPageState extends State<MainPage>
   void _validateTransliteration() {
     String transliteration = _textEditingController.text.trim();
     _textEditingController.clear();
-    if (_hiraganaMap[_currentHiragana] == transliteration) {
+    String? expected = _hiraganaMap[_currentHiragana];
+    if (expected == transliteration) {
       _showCustomSnackBar('Correct!', Colors.green);
     } else {
-      _showCustomSnackBar('Incorrect!', Colors.red);
+      _showCustomSnackBar('Incorrect! It was "$expected"', Colors.red);
     }
     _enableDisableNextButton();
     _generateRandomHiragana();
+    FocusScope.of(context).requestFocus(_focusNode);
   }
 
   void _showCustomSnackBar(String message, Color color) {
@@ -114,7 +126,7 @@ class MainPageState extends State<MainPage>
             padding: const EdgeInsets.all(8.0),
             child: Text(
               message,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               textAlign: TextAlign.center,
             ),
           ),
@@ -172,6 +184,7 @@ class MainPageState extends State<MainPage>
                 border: OutlineInputBorder(),
                 labelText: 'Transliteration',
               ),
+              focusNode: _focusNode,
               onSubmitted: (value) {
                 if (!_isNextHiraganaDisabled) {
                   _validateTransliteration();
