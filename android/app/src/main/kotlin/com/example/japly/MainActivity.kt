@@ -1,4 +1,4 @@
-package com.example.japly
+package com.pasqg.japly
 
 import io.flutter.embedding.android.FlutterActivity
 
