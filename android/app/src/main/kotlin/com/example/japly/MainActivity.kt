@@ -1,4 +1,4 @@
-package com.pasqg.japly
+package com.pasqg.japapp
 
 import io.flutter.embedding.android.FlutterActivity
 

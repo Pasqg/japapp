@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:japly/ui/main_page.dart';
+import 'package:japapp/ui/main_page.dart';
 
 
 void main() {
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hiragana App',
+      title: 'JapApp',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         scaffoldBackgroundColor: Colors.white,

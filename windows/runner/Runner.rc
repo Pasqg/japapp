@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.pasqg" "\0"
-            VALUE "FileDescription", "japly" "\0"
+            VALUE "FileDescription", "japapp" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "japly" "\0"
+            VALUE "InternalName", "japapp" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.pasqg. All rights reserved." "\0"
-            VALUE "OriginalFilename", "japly.exe" "\0"
-            VALUE "ProductName", "japly" "\0"
+            VALUE "OriginalFilename", "japapp.exe" "\0"
+            VALUE "ProductName", "japapp" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
