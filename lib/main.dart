@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:japly/ui/main_page.dart';
+
+
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -12,9 +14,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Hiragana App',
       theme: ThemeData(
-        primarySwatch: Colors.purple,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: MainPage(),
+      home: const MainPage(),
     );
   }
 }
