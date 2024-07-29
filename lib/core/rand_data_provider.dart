@@ -169,7 +169,8 @@ class RandDataProvider<K, V> {
 
   (K, V) get() {
     final random = Random();
-    final entry = _data.entries.elementAt(random.nextInt(HIRAGANA_MAP.length));
+    final entries = _data.entries;
+    final entry = entries.elementAt(random.nextInt(entries.length));
     return (entry.key, entry.value);
   }
 }
