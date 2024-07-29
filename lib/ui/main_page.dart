@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:japapp/core/kana_stats.dart';
 
 import 'package:japapp/core/rand_data_provider.dart';
 import 'package:japapp/ui/kana_grid_page.dart';
@@ -17,6 +18,7 @@ class MainPageState extends State<MainPage>
   final TextEditingController _textEditingController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FocusNode _focusNode = FocusNode();
+  final PracticeStats<String> _practiceStats = PracticeStats();
 
   late TabController _tabController;
 
@@ -64,8 +66,10 @@ class MainPageState extends State<MainPage>
     _textEditingController.clear();
     String expected = _currentKana.$2;
     if (expected == transliteration) {
+      _practiceStats.record(_currentKana.$1, true);
       _showCustomSnackBar('Correct!', Colors.green);
     } else {
+      _practiceStats.record(_currentKana.$1, false);
       _showCustomSnackBar('Incorrect! It was "$expected"', Colors.red);
     }
     _enableDisableNextButton();
@@ -103,7 +107,9 @@ class MainPageState extends State<MainPage>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => KanaGridPage(script: _selectedScript, kanasMap: _kanaProvider().getAll()),
+        builder: (context) => KanaGridPage(script: _selectedScript,
+        kanasMap: _kanaProvider().getAll(),
+        stats: _practiceStats),
       ),
     );
   }
