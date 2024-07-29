@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:japapp/core/rand_data_provider.dart';
+import 'package:japapp/ui/kana_grid_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -38,13 +39,17 @@ class MainPageState extends State<MainPage>
     super.dispose();
   }
 
+  RandDataProvider<String, String> _kanaProvider() {
+      if (_selectedScript == 'Hiragana') {
+        return RandDataProvider.HIRAGANA;
+      } else {
+        return RandDataProvider.KATAKANA;
+      }
+  }
+
   void _nextKana() {
     setState(() {
-      if (_selectedScript == 'Hiragana') {
-        _currentKana = RandDataProvider.HIRAGANA.get();
-      } else {
-        _currentKana = RandDataProvider.KATAKANA.get();
-      }
+      _currentKana = _kanaProvider().get();
     });
   }
 
@@ -94,6 +99,15 @@ class MainPageState extends State<MainPage>
     });
   }
 
+  void _openKanaGrid() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => KanaGridPage(script: _selectedScript, kanasMap: _kanaProvider().getAll()),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,6 +154,14 @@ class MainPageState extends State<MainPage>
                 _nextKana();
               });
             },
+          ),
+        ),
+        Positioned(
+          top: 16,
+          right: 16,
+          child: IconButton(
+            icon: const Icon(Icons.grid_on),
+            onPressed: _openKanaGrid,
           ),
         ),
         Center(

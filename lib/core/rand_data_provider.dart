@@ -37,16 +37,10 @@ const Map<String, String> KATAKANA_MAP = {
   'メ': 'me',
   'モ': 'mo',
   'ヤ': 'ya',
-  'ユ': 'yu',
-  'ヨ': 'yo',
-  'ラ': 'ra',
   'リ': 'ri',
   'ル': 'ru',
   'レ': 're',
   'ロ': 'ro',
-  'ワ': 'wa',
-  'ヲ': 'wo',
-  'ン': 'n',
   'ガ': 'ga',
   'ギ': 'gi',
   'グ': 'gu',
@@ -72,6 +66,12 @@ const Map<String, String> KATAKANA_MAP = {
   'プ': 'pu',
   'ペ': 'pe',
   'ポ': 'po',
+  'ユ': 'yu',
+  'ヨ': 'yo',
+  'ラ': 'ra',
+  'ワ': 'wa',
+  'ヲ': 'wo',
+  'ン': 'n',
   'キャ': 'kya',
   'キュ': 'kyu',
   'キョ': 'kyo',
@@ -143,14 +143,13 @@ const Map<String, String> HIRAGANA_MAP = {
   'む': 'mu',
   'め': 'me',
   'も': 'mo',
+  'ら': 'ra',
+  'り': 'ri',
+  'れ': 're',
+  'ろ': 'ro',
   'や': 'ya',
   'ゆ': 'yu',
   'よ': 'yo',
-  'ら': 'ra',
-  'り': 'ri',
-  'る': 'ru',
-  'れ': 're',
-  'ろ': 'ro',
   'わ': 'wa',
   'を': 'wo',
   'ん': 'n'
@@ -172,5 +171,9 @@ class RandDataProvider<K, V> {
     final entries = _data.entries;
     final entry = entries.elementAt(random.nextInt(entries.length));
     return (entry.key, entry.value);
+  }
+
+  Map<K, V> getAll() {
+    return _data;
   }
 }
