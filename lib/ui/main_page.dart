@@ -57,7 +57,7 @@ class MainPageState extends State<MainPage>
       _currentKana = _kanaProvider().get();
     var (int correct, int total) = _practiceStats.getStats(_currentKana.$1);
     var (String transliteration, String translation) = _currentKana.$2;
-    if (total == 0 || correct == 0 || total / correct > 2) {
+    if (total == 0 || correct == 0 || total / correct >= 2) {
       _textEditingController.text = "$transliteration - $translation";
     }
     });
