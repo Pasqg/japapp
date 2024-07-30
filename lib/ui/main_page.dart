@@ -23,7 +23,8 @@ class MainPageState extends State<MainPage>
   late TabController _tabController;
 
   String _selectedScript = "Hiragana";
-  (String, String) _currentKana = ('', '');
+  (String japanese, (String transliteration, String translation)) _currentKana =
+      ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
 
   @override
@@ -41,17 +42,24 @@ class MainPageState extends State<MainPage>
     super.dispose();
   }
 
-  RandDataProvider<String, String> _kanaProvider() {
-      if (_selectedScript == 'Hiragana') {
-        return RandDataProvider.HIRAGANA;
-      } else {
-        return RandDataProvider.KATAKANA;
-      }
+  RandDataProvider<String, (String, String)> _kanaProvider() {
+    if (_selectedScript == 'Hiragana') {
+      return RandDataProvider.HIRAGANA;
+    } else if (_selectedScript == 'Katakana') {
+      return RandDataProvider.KATAKANA;
+    } else {
+      return RandDataProvider.WORDS_3000;
+    }
   }
 
   void _nextKana() {
     setState(() {
       _currentKana = _kanaProvider().get();
+    var (int correct, int total) = _practiceStats.getStats(_currentKana.$1);
+    var (String transliteration, String translation) = _currentKana.$2;
+    if (total == 0 || correct == 0 || total / correct > 2) {
+      _textEditingController.text = "$transliteration - $translation";
+    }
     });
   }
 
@@ -64,7 +72,11 @@ class MainPageState extends State<MainPage>
   void _validateTransliteration() {
     String transliteration = _textEditingController.text.trim();
     _textEditingController.clear();
-    String expected = _currentKana.$2;
+    String expected = _currentKana.$2.$1;
+    String translation = _currentKana.$2.$2;
+    if (translation != expected) {
+      expected = "$expected - $translation";
+    }
     if (expected == transliteration) {
       _practiceStats.record(_currentKana.$1, true);
       _showCustomSnackBar('Correct!', Colors.green);
@@ -98,7 +110,7 @@ class MainPageState extends State<MainPage>
       ),
     );
     overlayState.insert(overlayEntry);
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 5), () {
       overlayEntry.remove();
     });
   }
@@ -107,9 +119,10 @@ class MainPageState extends State<MainPage>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => KanaGridPage(script: _selectedScript,
-        kanasMap: _kanaProvider().getAll(),
-        stats: _practiceStats),
+        builder: (context) => KanaGridPage(
+            script: _selectedScript,
+            kanasMap: _kanaProvider().getAll(),
+            stats: _practiceStats),
       ),
     );
   }
@@ -148,7 +161,8 @@ class MainPageState extends State<MainPage>
           left: 16,
           child: DropdownButton<String>(
             value: _selectedScript,
-            items: <String>['Hiragana', 'Katakana'].map((String value) {
+            items:
+                <String>['Hiragana', 'Katakana', 'Words'].map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),

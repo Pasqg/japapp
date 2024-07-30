@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:japapp/core/kana_stats.dart';
 
 class KanaGridPage extends StatelessWidget {
-  final Map<String, String> kanasMap;
+  final Map<String, (String transliteration, String translation)> kanasMap;
   final String script;
   final PracticeStats<String> stats;
 
@@ -91,7 +91,7 @@ class KanaGridPage extends StatelessWidget {
         itemBuilder: (context, index) {
           var entry = kanas[index];
           var kana = entry.key;
-          var transliteration = entry.value;
+          var transliteration = entry.value.$1;
           var (percentage, _, _) = _percentageForKana(kana);
           return GestureDetector(
             onTap: () {
