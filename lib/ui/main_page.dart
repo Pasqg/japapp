@@ -59,7 +59,20 @@ class MainPageState extends State<MainPage>
 
   void _nextKana() {
     setState(() {
-      _currentKana = _kanaProvider().get();
+      final data = _kanaProvider().getAll();
+      final keys = data.keys;
+
+      var totalStat = Stat(0, 0);
+      var count = 1;
+      for (String k in keys) {
+        var stat = _practiceStats.getStats(k);
+        totalStat = Stat(totalStat.correct + stat.correct, totalStat.total + stat.total);
+        count += 1;
+        if (totalStat.percentage() < 80) {
+          break;
+        }
+      }
+      _currentKana = _kanaProvider().getN(count);
     });
   }
 

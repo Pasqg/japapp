@@ -14,11 +14,15 @@ class RandDataProvider<K, V> {
   static const RandDataProvider<String, (String, String)> WORDS_3000 =
       RandDataProvider(data: WORDS_3000_MAP);
 
-  (K, V) get() {
+  (K, V) getN(int n) {
     final random = Random();
     final entries = _data.entries;
-    final entry = entries.elementAt(random.nextInt(entries.length));
+    final entry = entries.elementAt(random.nextInt(min(n, entries.length)));
     return (entry.key, entry.value);
+  }
+
+  (K, V) get() {
+    return getN(_data.entries.length);
   }
 
   Map<K, V> getAll() {
