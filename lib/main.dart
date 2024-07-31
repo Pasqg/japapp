@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:japapp/ui/main_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final sharedPrefs = await SharedPreferences.getInstance();
+  runApp(MyApp(sharedPrefs: sharedPrefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences sharedPrefs;
+
+  const MyApp({super.key, required this.sharedPrefs});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +22,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const MainPage(),
+      home: MainPage(sharedPrefs: sharedPrefs),
     );
   }
 }

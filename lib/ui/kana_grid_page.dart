@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:japapp/core/kana_stats.dart';
+import 'package:japapp/core/practice_stats.dart';
 
 class KanaGridPage extends StatelessWidget {
   final Map<String, (String transliteration, String translation)> kanasMap;
   final String script;
-  final PracticeStats<String> stats;
+  final PracticeStats stats;
 
   const KanaGridPage(
       {super.key,
@@ -24,15 +24,10 @@ class KanaGridPage extends StatelessWidget {
     }
   }
 
-  (int percentage, int correct, int total) _percentageForKana(String kana) {
-    var (correct, total) = stats.getStats(kana);
-    var percentage = total > 0 ? (correct / total * 100).round() : 0;
-    return (percentage, correct, total);
-  }
-
   void _showKanaDialog(
       BuildContext context, String kana, String transliteration) {
-    var (percentage, correct, total) = _percentageForKana(kana);
+    var stat = stats.getStats(kana);
+    var percentage = stat.percentage();
     var color = _getColorForPercentage(percentage);
     showDialog(
       context: context,
@@ -43,7 +38,7 @@ class KanaGridPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '$percentage% (correct: $correct/total: $total)',
+                '$percentage% (correct: ${stat.correct}/total: ${stat.total})',
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -92,7 +87,7 @@ class KanaGridPage extends StatelessWidget {
           var entry = kanas[index];
           var kana = entry.key;
           var transliteration = entry.value.$1;
-          var (percentage, _, _) = _percentageForKana(kana);
+          var percentage = stats.getStats(kana).percentage();
           return GestureDetector(
             onTap: () {
               _showKanaDialog(context, kana, transliteration);

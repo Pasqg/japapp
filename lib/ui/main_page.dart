@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:japapp/core/kana_stats.dart';
+import 'package:japapp/core/practice_stats.dart';
 
 import 'package:japapp/core/rand_data_provider.dart';
 import 'package:japapp/ui/kana_grid_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final SharedPreferences sharedPrefs;
+
+  const MainPage({super.key, required this.sharedPrefs});
 
   @override
-  MainPageState createState() => MainPageState();
+  MainPageState createState() => MainPageState(sharedPrefs: sharedPrefs);
 }
 
 class MainPageState extends State<MainPage>
@@ -18,7 +21,7 @@ class MainPageState extends State<MainPage>
   final TextEditingController _textEditingController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FocusNode _focusNode = FocusNode();
-  final PracticeStats<String> _practiceStats = PracticeStats();
+  final PracticeStats _practiceStats;
 
   late TabController _tabController;
 
@@ -26,6 +29,8 @@ class MainPageState extends State<MainPage>
   (String japanese, (String transliteration, String translation)) _currentKana =
       ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
+
+  MainPageState({required SharedPreferences sharedPrefs}) : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs);
 
   @override
   void initState() {
@@ -55,11 +60,6 @@ class MainPageState extends State<MainPage>
   void _nextKana() {
     setState(() {
       _currentKana = _kanaProvider().get();
-    var (int correct, int total) = _practiceStats.getStats(_currentKana.$1);
-    var (String transliteration, String translation) = _currentKana.$2;
-    if (total == 0 || correct == 0 || total / correct >= 2) {
-      _textEditingController.text = "$transliteration - $translation";
-    }
     });
   }
 
@@ -69,7 +69,7 @@ class MainPageState extends State<MainPage>
     });
   }
 
-  void _validateTransliteration() {
+  Future<void> _validateTransliteration() async {
     String transliteration = _textEditingController.text.trim();
     _textEditingController.clear();
     String expected = _currentKana.$2.$1;
@@ -203,9 +203,9 @@ class MainPageState extends State<MainPage>
                     labelText: 'Transliteration',
                   ),
                   focusNode: _focusNode,
-                  onSubmitted: (value) {
+                  onSubmitted: (value) async {
                     if (!_isNextHiraganaDisabled) {
-                      _validateTransliteration();
+                      await _validateTransliteration();
                     }
                   },
                 ),
