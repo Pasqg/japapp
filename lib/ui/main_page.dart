@@ -18,32 +18,35 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
-  final TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _transliterationController =
+      TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FocusNode _focusNode = FocusNode();
   final PracticeStats _practiceStats;
 
   late TabController _tabController;
 
+  String _hintText = "";
   String _selectedScript = "Hiragana";
   (String japanese, (String transliteration, String translation)) _currentKana =
       ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
 
-  MainPageState({required SharedPreferences sharedPrefs}) : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs);
+  MainPageState({required SharedPreferences sharedPrefs})
+      : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs);
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _textEditingController.addListener(_enableDisableNextButton);
+    _transliterationController.addListener(_enableDisableNextButton);
     _nextKana();
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
-    _textEditingController.dispose();
+    _transliterationController.dispose();
     super.dispose();
   }
 
@@ -66,31 +69,52 @@ class MainPageState extends State<MainPage>
       var count = 1;
       for (String k in keys) {
         var stat = _practiceStats.getStats(k);
-        totalStat = Stat(totalStat.correct + stat.correct, totalStat.total + stat.total);
+        totalStat = Stat(
+            totalStat.correct + stat.correct, totalStat.total + stat.total);
         count += 1;
-        if (totalStat.percentage() < 80) {
+        if (totalStat.percentage() < 80 || totalStat.total / count <= 3) {
           break;
         }
       }
+
       _currentKana = _kanaProvider().getN(count);
+      if (_practiceStats.getStats(_currentKana.$1).percentage() <= 50) {
+        var (String transliteration, String translation) = _currentKana.$2;
+        _hintText = transliteration;
+        if (transliteration != translation) {
+          _hintText = "$_hintText - $translation";
+        }
+      } else {
+        _hintText = "";
+      }
     });
   }
 
   void _enableDisableNextButton() {
     setState(() {
-      _isNextHiraganaDisabled = _textEditingController.text.isEmpty;
+      _isNextHiraganaDisabled = _transliterationController.text.isEmpty;
     });
   }
 
   Future<void> _validateTransliteration() async {
-    String transliteration = _textEditingController.text.trim();
-    _textEditingController.clear();
-    String expected = _currentKana.$2.$1;
-    String translation = _currentKana.$2.$2;
-    if (translation != expected) {
+    var userInput = _transliterationController.text.trim().split(",");
+    _transliterationController.clear();
+    var userTransliteration = userInput[0].trim().toLowerCase();
+    var userTranslation = userInput.length > 1 ? userInput[1].trim().toLowerCase() : "";
+
+    var (String transliteration, String translation) = _currentKana.$2;
+    var translations = translation.split(", ").map((s) => s.trim().toLowerCase()).toSet();
+
+    var isCorrect = false;
+    var expected = transliteration;
+    if (transliteration == translation) {
+      isCorrect = userTransliteration == transliteration;
+    } else {
+      isCorrect = userTransliteration == transliteration && translations.contains(userTranslation);
       expected = "$expected - $translation";
     }
-    if (expected == transliteration) {
+
+    if (isCorrect) {
       _practiceStats.record(_currentKana.$1, true);
       _showCustomSnackBar('Correct!', Colors.green);
     } else {
@@ -208,9 +232,13 @@ class MainPageState extends State<MainPage>
                   style: const TextStyle(
                       fontSize: 100, fontWeight: FontWeight.bold),
                 ),
+                Text(
+                  _hintText,
+                  style: const TextStyle(fontSize: 32),
+                ),
                 const SizedBox(height: 20),
                 TextField(
-                  controller: _textEditingController,
+                  controller: _transliterationController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Transliteration',
