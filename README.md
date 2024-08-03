@@ -19,7 +19,9 @@ Given a set of ordered characters, the next one is randomly drawn from the small
 
 At each sample, statistics are collected such as correct answers and total number the character was seen. These are persisted as SharedPreferences.
 
-![screenshot](docs/main-page.png)
+![screenshot](docs/script-hiragana.png)
+
+![screenshot](docs/script-kanji.png)
 
 
 ## License

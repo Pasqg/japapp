@@ -16,6 +16,12 @@ class MainPage extends StatefulWidget {
   MainPageState createState() => MainPageState(sharedPrefs: sharedPrefs);
 }
 
+enum ScriptMode {
+  Hiragana,
+  Katakana,
+  Kanji,
+}
+
 class MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _transliterationController =
@@ -27,7 +33,7 @@ class MainPageState extends State<MainPage>
   late TabController _tabController;
 
   String _hintText = "";
-  String _selectedScript = "Hiragana";
+  ScriptMode _selectedScript = ScriptMode.Hiragana;
   (String japanese, (String transliteration, String translation)) _currentKana =
       ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
@@ -51,12 +57,14 @@ class MainPageState extends State<MainPage>
   }
 
   RandDataProvider<String, (String, String)> _kanaProvider() {
-    if (_selectedScript == 'Hiragana') {
-      return RandDataProvider.HIRAGANA;
-    } else if (_selectedScript == 'Katakana') {
+    switch (_selectedScript) {
+      
+      case ScriptMode.Hiragana:
+        return RandDataProvider.HIRAGANA;
+      case ScriptMode.Katakana:
       return RandDataProvider.KATAKANA;
-    } else {
-      return RandDataProvider.WORDS_3000;
+      case ScriptMode.Kanji:
+      return RandDataProvider.SINGLE_KANJI;
     }
   }
 
@@ -157,7 +165,7 @@ class MainPageState extends State<MainPage>
       context,
       MaterialPageRoute(
         builder: (context) => KanaGridPage(
-            script: _selectedScript,
+            script: _selectedScript.name,
             kanasMap: _kanaProvider().getAll(),
             stats: _practiceStats),
       ),
@@ -173,7 +181,7 @@ class MainPageState extends State<MainPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Hiragana'),
+            Tab(text: "Script"),
             Tab(text: 'Words'),
             Tab(text: 'Talk'),
           ],
@@ -196,16 +204,16 @@ class MainPageState extends State<MainPage>
         Positioned(
           top: 16,
           left: 16,
-          child: DropdownButton<String>(
+          child: DropdownButton<ScriptMode>(
             value: _selectedScript,
             items:
-                <String>['Hiragana', 'Katakana', 'Words'].map((String value) {
-              return DropdownMenuItem<String>(
+                <ScriptMode>[ScriptMode.Hiragana, ScriptMode.Katakana, ScriptMode.Kanji].map((ScriptMode value) {
+              return DropdownMenuItem<ScriptMode>(
                 value: value,
-                child: Text(value),
+                child: Text(value.name),
               );
             }).toList(),
-            onChanged: (String? newValue) {
+            onChanged: (ScriptMode? newValue) {
               setState(() {
                 _selectedScript = newValue!;
                 _nextKana();

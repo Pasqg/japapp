@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:japapp/core/kana.dart';
+import 'package:japapp/core/kanjis.dart';
 
 // todo: should keep a frequency map and give higher probability of next draw to lower frequencies
 class RandDataProvider<K, V> {
@@ -13,6 +14,10 @@ class RandDataProvider<K, V> {
       RandDataProvider(data: KATAKANA_MAP);
   static const RandDataProvider<String, (String, String)> WORDS_3000 =
       RandDataProvider(data: WORDS_3000_MAP);
+  static const RandDataProvider<String, (String, String)> WORDS_50 =
+      RandDataProvider(data: WORDS_50_MAP);
+  static const RandDataProvider<String, (String, String)> SINGLE_KANJI =
+      RandDataProvider(data: SINGLE_KANJI_WORDS);
 
   (K, V) getN(int n) {
     final random = Random();
