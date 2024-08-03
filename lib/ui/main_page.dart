@@ -72,7 +72,6 @@ class MainPageState extends State<MainPage>
     setState(() {
       final data = _kanaProvider().getAll();
       final keys = data.keys;
-
       var totalStat = Stat(0, 0);
       var count = 1;
       for (String k in keys) {
@@ -198,10 +197,9 @@ class MainPageState extends State<MainPage>
     );
   }
 
-  Widget _buildHiraganaView() {
-    return Stack(
-      children: [
-        Positioned(
+  Widget _commonOptions() {
+    return Stack(children: [
+      Positioned(
           top: 16,
           left: 16,
           child: DropdownButton<ScriptMode>(
@@ -228,7 +226,14 @@ class MainPageState extends State<MainPage>
             icon: const Icon(Icons.grid_on),
             onPressed: _openKanaGrid,
           ),
-        ),
+        )
+    ]);
+  }
+
+  Widget _buildHiraganaView() {
+    return Stack(
+      children: [
+        _commonOptions(),
         Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
