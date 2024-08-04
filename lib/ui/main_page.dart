@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:japapp/core/practice_stats.dart';
+import 'package:japapp/core/practice_type.dart';
 
 import 'package:japapp/core/rand_data_provider.dart';
 import 'package:japapp/ui/kana_grid_page.dart';
@@ -10,17 +11,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   final SharedPreferences sharedPrefs;
+  final PracticeSetProvider<String, (String, String)> practiceSetProvider;
 
-  const MainPage({super.key, required this.sharedPrefs});
+  const MainPage(
+      {super.key,
+      required this.sharedPrefs,
+      required this.practiceSetProvider});
 
   @override
-  MainPageState createState() => MainPageState(sharedPrefs: sharedPrefs);
-}
-
-enum ScriptMode {
-  Hiragana,
-  Katakana,
-  Kanji,
+  MainPageState createState() => MainPageState(
+      sharedPrefs: sharedPrefs, practiceSetProvider: practiceSetProvider);
 }
 
 class MainPageState extends State<MainPage>
@@ -30,17 +30,22 @@ class MainPageState extends State<MainPage>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FocusNode _focusNode = FocusNode();
   final PracticeStats _practiceStats;
+  final PracticeSetProvider<String, (String, String)> _practiceSetProvider;
 
   late TabController _tabController;
 
-  ScriptMode _selectedScript = ScriptMode.Hiragana;
+  PracticeType _selectedScript = PracticeType.Hiragana;
   (String japanese, (String transliteration, String translation)) _currentKana =
       ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
   bool _transliterate = Random().nextBool();
 
-  MainPageState({required SharedPreferences sharedPrefs})
-      : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs);
+  MainPageState(
+      {required SharedPreferences sharedPrefs,
+      required PracticeSetProvider<String, (String, String)>
+          practiceSetProvider})
+      : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs),
+        _practiceSetProvider = practiceSetProvider;
 
   @override
   void initState() {
@@ -57,15 +62,8 @@ class MainPageState extends State<MainPage>
     super.dispose();
   }
 
-  RandDataProvider<String, (String, String)> _kanaProvider() {
-    switch (_selectedScript) {
-      case ScriptMode.Hiragana:
-        return RandDataProvider.HIRAGANA;
-      case ScriptMode.Katakana:
-        return RandDataProvider.KATAKANA;
-      case ScriptMode.Kanji:
-        return RandDataProvider.SINGLE_KANJI;
-    }
+  RandData<String, (String, String)> _kanaProvider() {
+    return _practiceSetProvider.getSet(_selectedScript);
   }
 
   void _nextKana() {
@@ -206,19 +204,19 @@ class MainPageState extends State<MainPage>
       Positioned(
         top: 16,
         left: 16,
-        child: DropdownButton<ScriptMode>(
+        child: DropdownButton<PracticeType>(
           value: _selectedScript,
-          items: <ScriptMode>[
-            ScriptMode.Hiragana,
-            ScriptMode.Katakana,
-            ScriptMode.Kanji
-          ].map((ScriptMode value) {
-            return DropdownMenuItem<ScriptMode>(
+          items: <PracticeType>[
+            PracticeType.Hiragana,
+            PracticeType.Katakana,
+            PracticeType.Kanji
+          ].map((PracticeType value) {
+            return DropdownMenuItem<PracticeType>(
               value: value,
               child: Text(value.name),
             );
           }).toList(),
-          onChanged: (ScriptMode? newValue) {
+          onChanged: (PracticeType? newValue) {
             setState(() {
               _selectedScript = newValue!;
               _nextKana();

@@ -1,23 +1,11 @@
 import 'dart:math';
-import 'package:japapp/core/kana.dart';
-import 'package:japapp/core/kanjis.dart';
+import 'package:japapp/core/practice_type.dart';
 
 // todo: should keep a frequency map and give higher probability of next draw to lower frequencies
-class RandDataProvider<K, V> {
+class RandData<K, V> {
   final Map<K, V> _data;
 
-  const RandDataProvider({required Map<K, V> data}) : _data = data;
-
-  static const RandDataProvider<String, (String, String)> HIRAGANA =
-      RandDataProvider(data: HIRAGANA_MAP);
-  static const RandDataProvider<String, (String, String)> KATAKANA =
-      RandDataProvider(data: KATAKANA_MAP);
-  static const RandDataProvider<String, (String, String)> WORDS_3000 =
-      RandDataProvider(data: WORDS_3000_MAP);
-  static const RandDataProvider<String, (String, String)> WORDS_50 =
-      RandDataProvider(data: WORDS_50_MAP);
-  static const RandDataProvider<String, (String, String)> SINGLE_KANJI =
-      RandDataProvider(data: SINGLE_KANJI_WORDS);
+  const RandData({required Map<K, V> data}) : _data = data;
 
   (K, V) getN(int n) {
     final random = Random();
@@ -32,5 +20,16 @@ class RandDataProvider<K, V> {
 
   Map<K, V> getAll() {
     return _data;
+  }
+}
+
+class PracticeSetProvider<K, V> {
+  final Map<PracticeType, RandData<K, V>> _map;
+
+  const PracticeSetProvider({required Map<PracticeType, RandData<K, V>> map})
+      : _map = map;
+
+  RandData<K, V> getSet(PracticeType type) {
+    return _map[type] ?? const RandData(data: {});
   }
 }

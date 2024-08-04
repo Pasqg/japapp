@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:japapp/core/kana.dart';
 import 'package:japapp/core/kanjis.dart';
+import 'package:japapp/core/practice_type.dart';
 import 'package:japapp/core/rand_data_provider.dart';
 import 'package:japapp/ui/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 void main() async {
-
-  const RandDataProvider<String, (String, String)> hiraganaProvider =
-      RandDataProvider(data: HIRAGANA_MAP);
-  const RandDataProvider<String, (String, String)> katakanaProvider =
-      RandDataProvider(data: KATAKANA_MAP);
-  const RandDataProvider<String, (String, String)> kanjiProvider =
-      RandDataProvider(data: SINGLE_KANJI_WORDS);
+  const PracticeSetProvider<String, (String, String)> practiceSetProvider =
+      PracticeSetProvider(map: {
+    PracticeType.Hiragana: RandData(data: HIRAGANA_MAP),
+    PracticeType.Katakana: RandData(data: KATAKANA_MAP),
+    PracticeType.Kanji: RandData(data: SINGLE_KANJI_WORDS),
+  });
 
   WidgetsFlutterBinding.ensureInitialized();
   final sharedPrefs = await SharedPreferences.getInstance();
-  runApp(MyApp(sharedPrefs: sharedPrefs));
+  runApp(MyApp(
+      sharedPrefs: sharedPrefs, practiceSetProvider: practiceSetProvider));
 }
 
 class MyApp extends StatelessWidget {
   final SharedPreferences sharedPrefs;
+  final PracticeSetProvider<String, (String, String)> practiceSetProvider;
 
-  const MyApp({super.key, required this.sharedPrefs});
+  const MyApp(
+      {super.key,
+      required this.sharedPrefs,
+      required this.practiceSetProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: MainPage(sharedPrefs: sharedPrefs),
+      home: MainPage(
+        sharedPrefs: sharedPrefs,
+        practiceSetProvider: practiceSetProvider,
+      ),
     );
   }
 }
