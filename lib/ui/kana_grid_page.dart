@@ -53,6 +53,10 @@ class KanaGridPage extends StatelessWidget {
                 transliteration,
                 style: const TextStyle(fontSize: 24, color: Colors.black),
               ),
+              Text(
+                stat.confusedSet.toString(),
+                style: const TextStyle(fontSize: 24, color: Colors.black),
+              ),
             ],
           ),
           actions: [

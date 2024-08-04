@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:japapp/core/practice_stats.dart';
@@ -32,11 +33,11 @@ class MainPageState extends State<MainPage>
 
   late TabController _tabController;
 
-  String _hintText = "";
   ScriptMode _selectedScript = ScriptMode.Hiragana;
   (String japanese, (String transliteration, String translation)) _currentKana =
       ('', ('', ''));
   bool _isNextHiraganaDisabled = true;
+  bool _transliterate = Random().nextBool();
 
   MainPageState({required SharedPreferences sharedPrefs})
       : _practiceStats = PracticeStats(sharedPrefs: sharedPrefs);
@@ -58,13 +59,12 @@ class MainPageState extends State<MainPage>
 
   RandDataProvider<String, (String, String)> _kanaProvider() {
     switch (_selectedScript) {
-      
       case ScriptMode.Hiragana:
         return RandDataProvider.HIRAGANA;
       case ScriptMode.Katakana:
-      return RandDataProvider.KATAKANA;
+        return RandDataProvider.KATAKANA;
       case ScriptMode.Kanji:
-      return RandDataProvider.SINGLE_KANJI;
+        return RandDataProvider.SINGLE_KANJI;
     }
   }
 
@@ -72,29 +72,21 @@ class MainPageState extends State<MainPage>
     setState(() {
       final data = _kanaProvider().getAll();
       final keys = data.keys;
-      var totalStat = Stat(0, 0);
-      var count = 1;
-      for (String k in keys) {
-        var stat = _practiceStats.getStats(k);
-        totalStat = Stat(
-            totalStat.correct + stat.correct, totalStat.total + stat.total);
-        count += 1;
-        if (totalStat.percentage() < 80 || totalStat.total / count <= 3) {
-          break;
-        }
-      }
-
-      _currentKana = _kanaProvider().getN(count);
-      if (_practiceStats.getStats(_currentKana.$1).percentage() <= 50) {
-        var (String transliteration, String translation) = _currentKana.$2;
-        _hintText = transliteration;
-        if (transliteration != translation) {
-          _hintText = "$_hintText - $translation";
-        }
-      } else {
-        _hintText = "";
-      }
+      _currentKana = _kanaProvider().getN(_practiceStats.learnedCount(keys));
+      _transliterate = Random().nextBool();
     });
+  }
+
+  String _hintText(int threshold) {
+    String hintText = "";
+    if (_practiceStats.getStats(_currentKana.$1).percentage() <= threshold) {
+      var (String transliteration, String translation) = _currentKana.$2;
+      hintText = transliteration;
+      if (transliteration != translation) {
+        hintText = "$hintText - $translation";
+      }
+    }
+    return hintText;
   }
 
   void _enableDisableNextButton() {
@@ -107,30 +99,42 @@ class MainPageState extends State<MainPage>
     var userInput = _transliterationController.text.trim().split(",");
     _transliterationController.clear();
     var userTransliteration = userInput[0].trim().toLowerCase();
-    var userTranslation = userInput.length > 1 ? userInput[1].trim().toLowerCase() : "";
+    var userTranslation =
+        userInput.length > 1 ? userInput[1].trim().toLowerCase() : "";
 
     var (String transliteration, String translation) = _currentKana.$2;
-    var translations = translation.split(", ").map((s) => s.trim().toLowerCase()).toSet();
+    var translations =
+        translation.split(", ").map((s) => s.trim().toLowerCase()).toSet();
 
     var isCorrect = false;
     var expected = transliteration;
     if (transliteration == translation) {
       isCorrect = userTransliteration == transliteration;
     } else {
-      isCorrect = userTransliteration == transliteration && translations.contains(userTranslation);
+      isCorrect = userTransliteration == transliteration &&
+          translations.contains(userTranslation);
       expected = "$expected - $translation";
     }
 
-    if (isCorrect) {
-      _practiceStats.record(_currentKana.$1, true);
-      _showCustomSnackBar('Correct!', Colors.green);
-    } else {
-      _practiceStats.record(_currentKana.$1, false);
-      _showCustomSnackBar('Incorrect! It was "$expected"', Colors.red);
-    }
+    _recordStats(isCorrect, expected, userTransliteration);
     _enableDisableNextButton();
     _nextKana();
     FocusScope.of(context).requestFocus(_focusNode);
+  }
+
+  void _recordStats(
+      bool isCorrect, String expected, String? confusedWithTranslit) {
+    if (isCorrect) {
+      _practiceStats.record(_currentKana.$1, true, null);
+      _showCustomSnackBar('Correct!', Colors.green);
+    } else {
+      var confusedWith;
+      if (confusedWithTranslit != null) {
+        confusedWith = _kanaProvider().get(confusedWithTranslit);
+      }
+      _practiceStats.record(_currentKana.$1, false, confusedWith);
+      _showCustomSnackBar('Incorrect! It was "$expected"', Colors.red);
+    }
   }
 
   void _showCustomSnackBar(String message, Color color) {
@@ -189,7 +193,7 @@ class MainPageState extends State<MainPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildHiraganaView(),
+          _transliterate ? _transliterationView() : _selectionView(),
           const Center(child: Text('Coming soon...')),
           const Center(child: Text('Coming soon...')),
         ],
@@ -200,37 +204,114 @@ class MainPageState extends State<MainPage>
   Widget _commonOptions() {
     return Stack(children: [
       Positioned(
-          top: 16,
-          left: 16,
-          child: DropdownButton<ScriptMode>(
-            value: _selectedScript,
-            items:
-                <ScriptMode>[ScriptMode.Hiragana, ScriptMode.Katakana, ScriptMode.Kanji].map((ScriptMode value) {
-              return DropdownMenuItem<ScriptMode>(
-                value: value,
-                child: Text(value.name),
-              );
-            }).toList(),
-            onChanged: (ScriptMode? newValue) {
-              setState(() {
-                _selectedScript = newValue!;
-                _nextKana();
-              });
-            },
-          ),
+        top: 16,
+        left: 16,
+        child: DropdownButton<ScriptMode>(
+          value: _selectedScript,
+          items: <ScriptMode>[
+            ScriptMode.Hiragana,
+            ScriptMode.Katakana,
+            ScriptMode.Kanji
+          ].map((ScriptMode value) {
+            return DropdownMenuItem<ScriptMode>(
+              value: value,
+              child: Text(value.name),
+            );
+          }).toList(),
+          onChanged: (ScriptMode? newValue) {
+            setState(() {
+              _selectedScript = newValue!;
+              _nextKana();
+            });
+          },
         ),
-        Positioned(
-          top: 16,
-          right: 16,
-          child: IconButton(
-            icon: const Icon(Icons.grid_on),
-            onPressed: _openKanaGrid,
-          ),
-        )
+      ),
+      Positioned(
+        top: 16,
+        right: 16,
+        child: IconButton(
+          icon: const Icon(Icons.grid_on),
+          onPressed: _openKanaGrid,
+        ),
+      )
     ]);
   }
 
-  Widget _buildHiraganaView() {
+  Widget _selectionView() {
+    final currentKana = _currentKana.$1;
+    final allKanas = _kanaProvider().getAll().keys;
+    final learnedCount = _practiceStats.learnedCount(allKanas);
+    var randomKanasSet = {currentKana};
+    final confusedSet =
+        _practiceStats.getStats(currentKana).confusedSet.keys.toList();
+    confusedSet.shuffle();
+    for (int i = 0; i < min(3, confusedSet.length); i++) {
+      randomKanasSet.add(confusedSet[i]);
+    }
+    int tentatives = 0;
+    int expectedLength = min(6, allKanas.length);
+    while (randomKanasSet.length < expectedLength && tentatives < 64) {
+      randomKanasSet.add(_kanaProvider().getN(learnedCount).$1);
+      tentatives += 1;
+    }
+    final randomKanas = randomKanasSet.map((a) => a).toList();
+    randomKanas.shuffle();
+
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        _commonOptions(),
+        Positioned(
+          top: 200,
+          child: Text(
+            _hintText(100),
+            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 300.0),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // 3 columns
+            ),
+            itemCount: randomKanas.length,
+            itemBuilder: (context, index) {
+              final kana = randomKanas[index];
+              return GestureDetector(
+                onTap: () {
+                  if (currentKana == kana) {
+                    _practiceStats.record(currentKana, true, null);
+                    _showCustomSnackBar('Correct!', Colors.green);
+                  } else {
+                    _practiceStats.record(currentKana, false, kana);
+                    _practiceStats.record(kana, false, currentKana);
+                    _showCustomSnackBar(
+                        'Incorrect! It was "$currentKana"', Colors.red);
+                  }
+                  _nextKana();
+                },
+                child: Card(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          kana,
+                          style: const TextStyle(fontSize: 72),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _transliterationView() {
     return Stack(
       children: [
         _commonOptions(),
@@ -246,7 +327,7 @@ class MainPageState extends State<MainPage>
                       fontSize: 100, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _hintText,
+                  _hintText(50),
                   style: const TextStyle(fontSize: 32),
                 ),
                 const SizedBox(height: 20),

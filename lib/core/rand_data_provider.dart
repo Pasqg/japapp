@@ -26,8 +26,8 @@ class RandDataProvider<K, V> {
     return (entry.key, entry.value);
   }
 
-  (K, V) get() {
-    return getN(_data.entries.length);
+  V? get(K key) {
+    return _data[key];
   }
 
   Map<K, V> getAll() {
