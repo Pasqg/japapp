@@ -75,16 +75,17 @@ class MainPageState extends State<MainPage>
     });
   }
 
-  String _hintText(int threshold) {
+  (String, String) _hintText(int threshold) {
     String hintText = "";
     if (_practiceStats.getStats(_currentKana.$1).percentage() <= threshold) {
       var (String transliteration, String translation) = _currentKana.$2;
       hintText = transliteration;
       if (transliteration != translation) {
-        hintText = "$hintText - $translation";
+        return (transliteration, translation);
       }
+      return (transliteration, "");
     }
-    return hintText;
+    return ("", "");
   }
 
   void _enableDisableNextButton() {
@@ -209,7 +210,8 @@ class MainPageState extends State<MainPage>
           items: <PracticeType>[
             PracticeType.Hiragana,
             PracticeType.Katakana,
-            PracticeType.Kanji
+            PracticeType.Kanji,
+            PracticeType.Sentences,
           ].map((PracticeType value) {
             return DropdownMenuItem<PracticeType>(
               value: value,
@@ -254,16 +256,29 @@ class MainPageState extends State<MainPage>
     }
     final randomKanas = randomKanasSet.map((a) => a).toList();
     randomKanas.shuffle();
-
+    final (String transliteration, String translation) = _hintText(100);
     return Stack(
       alignment: Alignment.topCenter,
       children: [
         _commonOptions(),
         Positioned(
-          top: 200,
-          child: Text(
-            _hintText(100),
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          top: 100,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+            child: Text(
+              transliteration,
+              style: const TextStyle(fontSize: 32),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 210,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+            child: Text(
+              translation,
+              style: const TextStyle(fontSize: 24),
+            ),
           ),
         ),
         Padding(
@@ -295,7 +310,7 @@ class MainPageState extends State<MainPage>
                       children: [
                         Text(
                           kana,
-                          style: const TextStyle(fontSize: 72),
+                          style: TextStyle(fontSize: kana.length > 2 ? 24 : 72),
                         ),
                       ],
                     ),
@@ -310,6 +325,7 @@ class MainPageState extends State<MainPage>
   }
 
   Widget _transliterationView() {
+    final hint = _hintText(50);
     return Stack(
       children: [
         _commonOptions(),
@@ -321,12 +337,17 @@ class MainPageState extends State<MainPage>
               children: [
                 Text(
                   _currentKana.$1,
-                  style: const TextStyle(
-                      fontSize: 100, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: _currentKana.$1.length > 4 ? 48 : 100,
+                      fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _hintText(50),
-                  style: const TextStyle(fontSize: 32),
+                  hint.$1,
+                  style: TextStyle(fontSize: hint.$1.length > 4 ? 24 : 32),
+                ),
+                Text(
+                  hint.$2,
+                  style: const TextStyle(fontSize: 24),
                 ),
                 const SizedBox(height: 20),
                 TextField(

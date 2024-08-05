@@ -12,6 +12,7 @@ void main() async {
     PracticeType.Hiragana: RandData(data: HIRAGANA_MAP),
     PracticeType.Katakana: RandData(data: KATAKANA_MAP),
     PracticeType.Kanji: RandData(data: SINGLE_KANJI_WORDS),
+    PracticeType.Sentences: RandData(data: EASY_SENTENCES),
   });
 
   WidgetsFlutterBinding.ensureInitialized();
