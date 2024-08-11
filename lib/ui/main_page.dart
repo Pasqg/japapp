@@ -250,8 +250,9 @@ class MainPageState extends State<MainPage>
     }
     int tentatives = 0;
     int expectedLength = min(6, allKanas.length);
+    final random = Random();
     while (randomKanasSet.length < expectedLength && tentatives < 64) {
-      randomKanasSet.add(_kanaProvider().getN(learnedCount).$1);
+      randomKanasSet.add(allKanas.elementAt(random.nextInt(allKanas.length)));
       tentatives += 1;
     }
     final randomKanas = randomKanasSet.map((a) => a).toList();
@@ -264,7 +265,8 @@ class MainPageState extends State<MainPage>
         Positioned(
           top: 100,
           child: Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.9),
             child: Text(
               transliteration,
               style: const TextStyle(fontSize: 32),
@@ -274,7 +276,8 @@ class MainPageState extends State<MainPage>
         Positioned(
           top: 210,
           child: Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.9),
             child: Text(
               translation,
               style: const TextStyle(fontSize: 24),
