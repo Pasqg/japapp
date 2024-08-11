@@ -12,6 +12,9 @@ void main() async {
     PracticeType.Hiragana: RandData(data: HIRAGANA_MAP),
     PracticeType.Katakana: RandData(data: KATAKANA_MAP),
     PracticeType.Kanji: RandData(data: SINGLE_KANJI_WORDS),
+    PracticeType.Words2: RandData(data: DOUBLE_KANJI_WORDS),
+    PracticeType.Words3: RandData(data: TRIPLE_KANJI_WORDS),
+    PracticeType.Verbs: RandData(data: VERBS),
     PracticeType.Sentences: RandData(data: EASY_SENTENCES),
   });
 
