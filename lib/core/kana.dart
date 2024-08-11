@@ -143,6 +143,7 @@ const Map<String, (String, String)> HIRAGANA_MAP = {
   'も': ('mo', 'mo'),
   'ら': ('ra', 'ra'),
   'り': ('ri', 'ri'),
+  'る': ('ru', 'ru'),
   'れ': ('re', 're'),
   'ろ': ('ro', 'ro'),
   'や': ('ya', 'ya'),
