@@ -207,12 +207,7 @@ class MainPageState extends State<MainPage>
         left: 16,
         child: DropdownButton<PracticeType>(
           value: _selectedScript,
-          items: <PracticeType>[
-            PracticeType.Hiragana,
-            PracticeType.Katakana,
-            PracticeType.Kanji,
-            PracticeType.Sentences,
-          ].map((PracticeType value) {
+          items: PracticeType.values.map((PracticeType value) {
             return DropdownMenuItem<PracticeType>(
               value: value,
               child: Text(value.name),
@@ -313,7 +308,7 @@ class MainPageState extends State<MainPage>
                       children: [
                         Text(
                           kana,
-                          style: TextStyle(fontSize: kana.length > 2 ? 24 : 72),
+                          style: TextStyle(fontSize: kana.length >= 2 ? max(24, 120 / kana.length) : 72),
                         ),
                       ],
                     ),
