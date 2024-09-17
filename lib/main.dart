@@ -14,6 +14,7 @@ void main() async {
     PracticeType.Kanji: RandData(data: SINGLE_KANJI_WORDS),
     PracticeType.Words2: RandData(data: DOUBLE_KANJI_WORDS),
     PracticeType.Words3: RandData(data: TRIPLE_KANJI_WORDS),
+    PracticeType.Words3000: RandData(data: WORDS_3000_MAP),
     PracticeType.Verbs: RandData(data: VERBS),
     PracticeType.Sentences: RandData(data: EASY_SENTENCES),
   });
